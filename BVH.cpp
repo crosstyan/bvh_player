@@ -418,7 +418,7 @@ void BVH::Save(const char *bvh_file_name) {
 			// if ( value_width > 0 ){ file.width( value_width ); }
 
 			// モーションデータを出力
-			file << GetMotion(i, channel_order[j]);
+			file << GetMotionAt(i, channel_order[j]);
 
 			// 空白か行末記号を出力
 			if (j != channel_order.size() - 1) {

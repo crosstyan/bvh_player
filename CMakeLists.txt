@@ -18,3 +18,6 @@ message(STATUS "GLUT include dir: ${GLUT_INCLUDE_DIR}")
 
 add_executable(bvh_player bvh_player.cpp)
 target_link_libraries(bvh_player bvh)
+
+add_executable(print print.cpp)
+target_link_libraries(print bvh)

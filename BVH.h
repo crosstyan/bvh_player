@@ -9,6 +9,7 @@
 #define _BVH_H_
 
 
+#include <span>
 #include <vector>
 #include <map>
 #include <string>
@@ -29,6 +30,42 @@ public:
 		Y_POSITION,
 		Z_POSITION
 	};
+
+	static const char *Stringify(ChannelEnum e) {
+		switch (e) {
+		case X_ROTATION:
+			return "X Rotation";
+		case Y_ROTATION:
+			return "Y Rotation";
+		case Z_ROTATION:
+			return "Z Rotation";
+		case X_POSITION:
+			return "X Position";
+		case Y_POSITION:
+			return "Y Position";
+		case Z_POSITION:
+			return "Z Position";
+		}
+		return "Unknown";
+	}
+	static const char *ShortStringify(ChannelEnum e) {
+		switch (e) {
+		case X_ROTATION:
+			return "XR";
+		case Y_ROTATION:
+			return "YR";
+		case Z_ROTATION:
+			return "ZR";
+		case X_POSITION:
+			return "XP";
+		case Y_POSITION:
+			return "YP";
+		case Z_POSITION:
+			return "ZP";
+		}
+		return "UU";
+	}
+
 	struct Joint;
 
 	// チャンネル情報
@@ -65,6 +102,22 @@ public:
 
 		// 回転軸
 		std::vector<Channel *> channels;
+
+		[[nodiscard]] std::optional<Joint> GetParent() const {
+			if (parent) return *parent;
+			return std::nullopt;
+		}
+
+		[[nodiscard]] std::span<Channel *const> GetChannels() const noexcept { return {channels.cbegin(), channels.cend()}; }
+		[[nodiscard]] std::span<const double> GetOffset() const noexcept { return {offset, 3}; }
+
+		[[nodiscard]] std::optional<std::span<const double>> GetSite() const {
+			if (has_site) {
+				auto sp = std::span(site, 3);
+				return std::move(sp);
+			}
+			return std::nullopt;
+		}
 	};
 
 
@@ -85,7 +138,10 @@ private:
 	/*  モーションデータの情報  */
 	int num_frame;   // フレーム数
 	double interval; // フレーム間の時間間隔
-	double *motion;  // [フレーム番号][チャンネル番号]
+
+	// f64[*] with stride of num_channel
+	// the shape is (num_frame, num_channel)
+	double *motion; // [フレーム番号][チャンネル番号]
 
 
 public:
@@ -118,32 +174,47 @@ public:
 public:
 	/*  データアクセス関数  */
 
+	[[nodiscard]] std::span<const double> GetMotion() const {
+		return {motion, static_cast<size_t>(num_frame * num_channel)};
+	}
+
+	/**
+	 * @brief  ストライド (チャンネル数)
+	 */
+	[[nodiscard]] int GetStride() const { return num_channel; }
+
 	// ロードが成功したかどうかを取得
-	bool IsLoadSuccess() const { return is_load_success; }
+	[[nodiscard]] bool IsLoadSuccess() const { return is_load_success; }
 
 	// ファイルの情報の取得
-	const std::string &GetFileName() const { return file_name; }
-	const std::string &GetMotionName() const { return motion_name; }
+	[[nodiscard]] const std::string &GetFileName() const { return file_name; }
+	[[nodiscard]] const std::string &GetMotionName() const { return motion_name; }
 
 	// 階層構造の情報の取得
-	const int GetNumJoint() const { return joints.size(); }
-	const Joint *GetJoint(int no) const { return joints[no]; }
-	const int GetNumChannel() const { return channels.size(); }
-	const Channel *GetChannel(int no) const { return channels[no]; }
+	[[nodiscard]] int GetNumJoint() const { return joints.size(); }
+	[[nodiscard]] const Joint *GetJoint(int no) const { return joints[no]; }
+	[[nodiscard]] int GetNumChannel() const { return channels.size(); }
+	[[nodiscard]] const Channel *GetChannel(int no) const { return channels[no]; }
 
-	const Joint *GetJoint(const std::string &j) const {
-		std::map<std::string, Joint *>::const_iterator i = joint_index.find(j);
+	[[nodiscard]] const Joint *GetJoint(const std::string &j) const {
+		auto i = joint_index.find(j);
 		return (i != joint_index.end()) ? (*i).second : nullptr;
 	}
 	const Joint *GetJoint(const char *j) const {
-		std::map<std::string, Joint *>::const_iterator i = joint_index.find(j);
+		auto i = joint_index.find(j);
 		return (i != joint_index.end()) ? (*i).second : nullptr;
 	}
 
 	// モーションデータの情報の取得
-	int GetNumFrame() const { return num_frame; }
-	double GetInterval() const { return interval; }
-	double GetMotion(int f, int c) const { return motion[f * num_channel + c]; }
+	[[nodiscard]] int GetNumFrame() const { return num_frame; }
+	[[nodiscard]] double GetInterval() const { return interval; }
+	/**
+	 * @brief モーションデータの取得
+	 * @param f frame
+	 * @param c channel
+	 * @return motion[f][c]
+	 */
+	[[nodiscard]] double GetMotionAt(const int f, const int c) const { return motion[f * num_channel + c]; }
 
 	// モーションデータの情報の変更
 	void SetMotion(int f, int c, double v) { motion[f * num_channel + c] = v; }
