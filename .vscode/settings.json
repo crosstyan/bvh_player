@@ -1,5 +1,18 @@
 {
     "cSpell.words": [
-        "Struct"
+        "FREEGLUT",
+        "Lightfv",
+        "Matrixd",
+        "MODELVIEW",
+        "Rotatef",
+        "Struct",
+        "Translatef",
+        "Uquadric",
+        "Xposition",
+        "Xrotation",
+        "Yposition",
+        "Yrotation",
+        "Zposition",
+        "Zrotation"
     ]
 }

@@ -15,13 +15,13 @@
 using namespace std;
 // コントラクタ
 BVH::BVH() {
-	motion = NULL;
+	motion = nullptr;
 	Clear();
 }
 
 // コントラクタ
 BVH::BVH(const char *bvh_file_name) {
-	motion = NULL;
+	motion = nullptr;
 	Clear();
 
 	Load(bvh_file_name);
@@ -42,7 +42,7 @@ void BVH::Clear() {
 	for (i = 0; i < joints.size(); i++) {
 		delete joints[i];
 	}
-	if (motion != NULL) {
+	if (motion != nullptr) {
 		delete motion;
 	}
 
@@ -58,7 +58,7 @@ void BVH::Clear() {
 
 	num_frame = 0;
 	interval  = 0.0;
-	motion    = NULL;
+	motion    = nullptr;
 }
 
 
@@ -110,8 +110,8 @@ void BVH::SetSkeleton(const char *name,
 			joints[i]->channels[j] = channels[a_joi[i]->channels[j]->index];
 		}
 
-		if (a_joi[i]->parent == NULL) {
-			joints[i]->parent = NULL;
+		if (a_joi[i]->parent == nullptr) {
+			joints[i]->parent = nullptr;
 		} else {
 			joints[i]->parent = joints[a_joi[i]->parent->index];
 		}
@@ -132,7 +132,7 @@ void BVH::SetMotion(int n_frame, double inter, const double *mo) {
 	num_frame = n_frame;
 	interval  = inter;
 	motion    = new double[num_frame * num_channel];
-	if (mo != NULL) {
+	if (mo != nullptr) {
 		memcpy(motion, mo, sizeof(double) * num_frame * num_channel);
 	}
 }
@@ -142,15 +142,14 @@ void BVH::SetMotion(int n_frame, double inter, const double *mo) {
 //  BVHファイルのロード
 //
 void BVH::Load(const char *bvh_file_name) {
-#define BUFFER_LENGTH 1024 * 4
-
+	constexpr auto  BUFFER_LENGTH = 1024 * 4;
 	ifstream file;
 	char line[BUFFER_LENGTH];
 	char *token;
-	char separater[] = " :,\t";
+	char separator[] = " :,\t";
 	vector<Joint *> joint_stack;
-	Joint *joint     = NULL;
-	Joint *new_joint = NULL;
+	Joint *joint     = nullptr;
+	Joint *new_joint = nullptr;
 	bool is_site     = false;
 	double x, y, z;
 	int i, j;
@@ -162,12 +161,12 @@ void BVH::Load(const char *bvh_file_name) {
 	file_name            = bvh_file_name;
 	const char *mn_first = bvh_file_name;
 	const char *mn_last  = bvh_file_name + strlen(bvh_file_name);
-	if (strrchr(bvh_file_name, '\\') != NULL) {
+	if (strrchr(bvh_file_name, '\\') != nullptr) {
 		mn_first = strrchr(bvh_file_name, '\\') + 1;
-	} else if (strrchr(bvh_file_name, '/') != NULL) {
+	} else if (strrchr(bvh_file_name, '/') != nullptr) {
 		mn_first = strrchr(bvh_file_name, '/') + 1;
 	}
-	if (strrchr(bvh_file_name, '.') != NULL) {
+	if (strrchr(bvh_file_name, '.') != nullptr) {
 		mn_last = strrchr(bvh_file_name, '.');
 	}
 	if (mn_last < mn_first) {
@@ -190,10 +189,10 @@ void BVH::Load(const char *bvh_file_name) {
 
 		// １行読み込み、先頭の単語を取得
 		file.getline(line, BUFFER_LENGTH);
-		token = strtok(line, separater);
+		token = strtok(line, separator);
 
 		// 空行の場合は次の行へ
-		if (token == NULL) {
+		if (token == nullptr) {
 			continue;
 		}
 
@@ -233,7 +232,7 @@ void BVH::Load(const char *bvh_file_name) {
 			}
 
 			// 関節名の読み込み
-			token = strtok(NULL, "");
+			token = strtok(nullptr, "");
 			while (*token == ' ') {
 				token++;
 			}
@@ -254,11 +253,11 @@ void BVH::Load(const char *bvh_file_name) {
 		// 関節のオフセット or 末端位置の情報
 		if (strcmp(token, "OFFSET") == 0) {
 			// 座標値を読み込み
-			token = strtok(NULL, separater);
+			token = strtok(nullptr, separator);
 			x     = token ? atof(token) : 0.0;
-			token = strtok(NULL, separater);
+			token = strtok(nullptr, separator);
 			y     = token ? atof(token) : 0.0;
-			token = strtok(NULL, separater);
+			token = strtok(nullptr, separator);
 			z     = token ? atof(token) : 0.0;
 
 			// 関節のオフセットに座標値を設定
@@ -267,9 +266,8 @@ void BVH::Load(const char *bvh_file_name) {
 				joint->site[0]  = x;
 				joint->site[1]  = y;
 				joint->site[2]  = z;
-			} else
-			// 末端位置に座標値を設定
-			{
+			} else {
+				// 末端位置に座標値を設定
 				joint->offset[0] = x;
 				joint->offset[1] = y;
 				joint->offset[2] = z;
@@ -280,7 +278,7 @@ void BVH::Load(const char *bvh_file_name) {
 		// 関節のチャンネル情報
 		if (strcmp(token, "CHANNELS") == 0) {
 			// チャンネル数を読み込み
-			token = strtok(NULL, separater);
+			token = strtok(nullptr, separator);
 			joint->channels.resize(token ? atoi(token) : 0);
 
 			// チャンネル情報を読み込み
@@ -293,7 +291,7 @@ void BVH::Load(const char *bvh_file_name) {
 				joint->channels[i] = channel;
 
 				// チャンネルの種類の判定
-				token = strtok(NULL, separater);
+				token = strtok(nullptr, separator);
 				if (strcmp(token, "Xrotation") == 0) {
 					channel->type = X_ROTATION;
 				} else if (strcmp(token, "Yrotation") == 0) {
@@ -320,7 +318,7 @@ void BVH::Load(const char *bvh_file_name) {
 	// モーション情報の読み込み
 	while (!file.eof()) {
 		file.getline(line, BUFFER_LENGTH);
-		token = strtok(line, separater);
+		token = strtok(line, separator);
 		if (!token) {
 			continue;
 		}
@@ -331,8 +329,8 @@ void BVH::Load(const char *bvh_file_name) {
 	if (file.eof()) {
 		goto bvh_error;
 	}
-	token = strtok(NULL, separater);
-	if (token == NULL) {
+	token = strtok(nullptr, separator);
+	if (token == nullptr) {
 		goto bvh_error;
 	}
 	num_frame = atoi(token);
@@ -350,8 +348,8 @@ void BVH::Load(const char *bvh_file_name) {
 	if (file.eof()) {
 		goto bvh_error;
 	}
-	token = strtok(NULL, separater);
-	if (token == NULL) {
+	token = strtok(nullptr, separator);
+	if (token == nullptr) {
 		goto bvh_error;
 	}
 	interval = atof(token);
@@ -362,13 +360,13 @@ void BVH::Load(const char *bvh_file_name) {
 	// モーションデータの読み込み
 	for (i = 0; i < num_frame; i++) {
 		file.getline(line, BUFFER_LENGTH);
-		token = strtok(line, separater);
+		token = strtok(line, separator);
 		for (j = 0; j < num_channel; j++) {
-			if (token == NULL) {
+			if (token == nullptr) {
 				goto bvh_error;
 			}
 			motion[i * num_channel + j] = atof(token);
-			token                       = strtok(NULL, separater);
+			token                       = strtok(nullptr, separator);
 		}
 	}
 
@@ -404,7 +402,7 @@ void BVH::Save(const char *bvh_file_name) {
 	// 出力フォーマットの設定
 	file.flags(ios::showpoint | ios::fixed);
 	file.precision(6);
-	//	int  value_widht = 11;
+	//	int  value_width = 11;
 
 	// 階層構造の出力
 	file << "HIERARCHY" << endl;
@@ -417,7 +415,7 @@ void BVH::Save(const char *bvh_file_name) {
 	for (i = 0; i < num_frame; i++) {
 		for (j = 0; j < channel_order.size(); j++) {
 			// 数値を固定幅で出力する場合は文字幅を設定
-			// if ( value_widht > 0 ){ file.width( value_widht ); }
+			// if ( value_width > 0 ){ file.width( value_width ); }
 
 			// モーションデータを出力
 			file << GetMotion(i, channel_order[j]);
@@ -551,7 +549,7 @@ void BVH::RenderFigure(int frame_no, float scale) {
 void BVH::RenderFigure(const Joint *joint, const double *data, float scale) {
 	glPushMatrix();
 
-	if (joint->parent == NULL) {
+	if (joint->parent == nullptr) {
 		// ルート関節の場合は平行移動を適用
 		glTranslatef(data[0] * scale, data[1] * scale, data[2] * scale);
 	} else {
@@ -627,8 +625,8 @@ void BVH::RenderBone(float x0, float y0, float z0, float x1, float y1, float z1)
 	GLdouble bone_length = sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
 
 	// 描画パラメタの設定
-	static GLUquadricObj *quad_obj = NULL;
-	if (quad_obj == NULL) {
+	static GLUquadricObj *quad_obj = nullptr;
+	if (quad_obj == nullptr) {
 		quad_obj = gluNewQuadric();
 	}
 	gluQuadricDrawStyle(quad_obj, GLU_FILL);

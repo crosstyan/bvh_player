@@ -61,8 +61,7 @@ bool is_draw_ground = false;
 //  テキストを描画
 //
 void drawMessage(int line_no, const char *message) {
-	int i;
-	if (message == NULL) {
+	if (message == nullptr) {
 		return;
 	}
 
@@ -84,7 +83,7 @@ void drawMessage(int line_no, const char *message) {
 	// メッセージの描画
 	glColor3f(1.0, 0.0, 0.0);
 	glRasterPos2i(8, 24 + 18 * line_no);
-	for (i = 0; message[i] != '\0'; i++) {
+	for (int i = 0; message[i] != '\0'; i++) {
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, message[i]);
 	}
 
@@ -305,7 +304,7 @@ void keyboard(unsigned char key, int mx, int my) {
 		OPENFILENAME open_file;
 		memset(&open_file, 0, sizeof(OPENFILENAME));
 		open_file.lStructSize  = sizeof(OPENFILENAME);
-		open_file.hwndOwner    = NULL;
+		open_file.hwndOwner    = nullptr;
 		open_file.lpstrFilter  = "BVH Motion Data (*.bvh)\0*.bvh\0All (*.*)\0*.*\0";
 		open_file.nFilterIndex = 1;
 		open_file.lpstrFile    = file_name;
@@ -328,7 +327,7 @@ void keyboard(unsigned char key, int mx, int my) {
 			// 読み込みに失敗したら削除
 			if (!bvh->IsLoadSuccess()) {
 				delete bvh;
-				bvh = NULL;
+				bvh = nullptr;
 			}
 
 			//	アニメーションをリセット
@@ -417,9 +416,6 @@ void initEnvironment(void) {
 
 	// 背景色を設定
 	glClearColor(0.5, 0.5, 0.8, 0.0);
-
-	// 初期のBVH動作データを読み込み
-	//	bvh = new BVH( "???.bvh" );
 }
 
 

@@ -107,7 +107,7 @@ public:
 					 int n_joi, const Joint **a_joi, int n_chan, const Channel **a_chan);
 
 	// 動作データの設定
-	void SetMotion(int n_frame, double interval, const double *mo = NULL);
+	void SetMotion(int n_frame, double interval, const double *mo = nullptr);
 
 	// BVHファイルのロード
 	void Load(const char *bvh_file_name);
@@ -133,11 +133,11 @@ public:
 
 	const Joint *GetJoint(const std::string &j) const {
 		std::map<std::string, Joint *>::const_iterator i = joint_index.find(j);
-		return (i != joint_index.end()) ? (*i).second : NULL;
+		return (i != joint_index.end()) ? (*i).second : nullptr;
 	}
 	const Joint *GetJoint(const char *j) const {
 		std::map<std::string, Joint *>::const_iterator i = joint_index.find(j);
-		return (i != joint_index.end()) ? (*i).second : NULL;
+		return (i != joint_index.end()) ? (*i).second : nullptr;
 	}
 
 	// モーションデータの情報の取得
