@@ -208,17 +208,17 @@ void BVH::Load(const char *bvh_file_name) {
 		if ((strcmp(token, "ROOT") == 0) ||
 			(strcmp(token, "JOINT") == 0)) {
 			// 関節データの作成
-			new_joint            = new Joint();
-			new_joint->hierarchy = this;
-			new_joint->index     = joints.size();
-			new_joint->parent    = joint;
-			new_joint->has_end_site  = false;
-			new_joint->offset[0] = 0.0;
-			new_joint->offset[1] = 0.0;
-			new_joint->offset[2] = 0.0;
-			new_joint->end_site[0]   = 0.0;
-			new_joint->end_site[1]   = 0.0;
-			new_joint->end_site[2]   = 0.0;
+			new_joint               = new Joint();
+			new_joint->hierarchy    = this;
+			new_joint->index        = joints.size();
+			new_joint->parent       = joint;
+			new_joint->has_end_site = false;
+			new_joint->offset[0]    = 0.0;
+			new_joint->offset[1]    = 0.0;
+			new_joint->offset[2]    = 0.0;
+			new_joint->end_site[0]  = 0.0;
+			new_joint->end_site[1]  = 0.0;
+			new_joint->end_site[2]  = 0.0;
 			joints.push_back(new_joint);
 			if (joint) {
 				joint->children.push_back(new_joint);
@@ -534,73 +534,70 @@ void BVH::OutputHierarchy(
 // 指定フレームの姿勢を描画
 void BVH::RenderFigure(int frame_no, float scale) {
 	// BVH骨格・姿勢を指定して描画
-	RenderFigure(joints[0], motion + frame_no * num_channel, scale);
+	RenderFigure(*joints[0], motion + frame_no * num_channel, scale);
 }
 
 
 // 指定されたBVH骨格・姿勢を描画（クラス関数）
-void BVH::RenderFigure(const Joint *joint, const double *data, float scale) {
+void BVH::RenderFigure(const Joint &joint, const double *data, float scale) {
 	glPushMatrix();
 
-	if (joint->parent == nullptr) {
+	if (joint.parent == nullptr) {
 		// ルート関節の場合は平行移動を適用
 		glTranslatef(data[0] * scale, data[1] * scale, data[2] * scale);
 	} else {
 		// 子関節の場合は親関節からの平行移動を適用
-		glTranslatef(joint->offset[0] * scale, joint->offset[1] * scale, joint->offset[2] * scale);
+		glTranslatef(joint.offset[0] * scale, joint.offset[1] * scale, joint.offset[2] * scale);
 	}
 
 	// 親関節からの回転を適用（ルート関節の場合はワールド座標からの回転）
-	int i, j;
-	for (i = 0; i < joint->channels.size(); i++) {
-		Channel &channel = *joint->channels[i];
-		if (channel.type == X_ROTATION) {
-			glRotatef(data[channel.index], 1.0f, 0.0f, 0.0f);
-		} else if (channel.type == Y_ROTATION) {
-			glRotatef(data[channel.index], 0.0f, 1.0f, 0.0f);
-		} else if (channel.type == Z_ROTATION) {
-			glRotatef(data[channel.index], 0.0f, 0.0f, 1.0f);
+	for (const auto *c : joint.channels) {
+		auto [_, type, index] = *c;
+		if (type == X_ROTATION) {
+			glRotatef(data[index], 1.0f, 0.0f, 0.0f);
+		} else if (type == Y_ROTATION) {
+			glRotatef(data[index], 0.0f, 1.0f, 0.0f);
+		} else if (type == Z_ROTATION) {
+			glRotatef(data[index], 0.0f, 0.0f, 1.0f);
 		}
 	}
 
 	// リンクを描画
 	// 関節座標系の原点から末端点へのリンクを描画
-	if (joint->children.size() == 0) {
-		RenderBone(0.0f, 0.0f, 0.0f, joint->end_site[0] * scale, joint->end_site[1] * scale, joint->end_site[2] * scale);
+	if (joint.children.size() == 0) {
+		RenderBone(0.0f, 0.0f, 0.0f, joint.end_site[0] * scale, joint.end_site[1] * scale, joint.end_site[2] * scale);
 	}
 	// 関節座標系の原点から次の関節への接続位置へのリンクを描画
-	if (joint->children.size() == 1) {
-		Joint *child = joint->children[0];
+	if (joint.children.size() == 1) {
+		Joint *child = joint.children[0];
 		RenderBone(0.0f, 0.0f, 0.0f, child->offset[0] * scale, child->offset[1] * scale, child->offset[2] * scale);
 	}
 	// 全関節への接続位置への中心点から各関節への接続位置へ円柱を描画
-	if (joint->children.size() > 1) {
+	if (joint.children.size() > 1) {
 		// 原点と全関節への接続位置への中心点を計算
 		float center[3] = {0.0f, 0.0f, 0.0f};
-		for (i = 0; i < joint->children.size(); i++) {
-			Joint *child = joint->children[i];
+		for (const auto *child : joint.children) {
 			center[0] += child->offset[0];
 			center[1] += child->offset[1];
 			center[2] += child->offset[2];
 		}
-		center[0] /= joint->children.size() + 1;
-		center[1] /= joint->children.size() + 1;
-		center[2] /= joint->children.size() + 1;
+		center[0] /= joint.children.size() + 1;
+		center[1] /= joint.children.size() + 1;
+		center[2] /= joint.children.size() + 1;
 
 		// 原点から中心点へのリンクを描画
 		RenderBone(0.0f, 0.0f, 0.0f, center[0] * scale, center[1] * scale, center[2] * scale);
 
 		// 中心点から次の関節への接続位置へのリンクを描画
-		for (i = 0; i < joint->children.size(); i++) {
-			Joint *child = joint->children[i];
+		for (const auto *child : joint.children) {
 			RenderBone(center[0] * scale, center[1] * scale, center[2] * scale,
 					   child->offset[0] * scale, child->offset[1] * scale, child->offset[2] * scale);
 		}
 	}
 
 	// 子関節に対して再帰呼び出し
-	for (i = 0; i < joint->children.size(); i++) {
-		RenderFigure(joint->children[i], data, scale);
+	for (const auto *child : joint.children) {
+		RenderFigure(*child, data, scale);
 	}
 
 	glPopMatrix();
