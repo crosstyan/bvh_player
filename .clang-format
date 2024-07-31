@@ -1,0 +1,51 @@
+# C++ specific configuration (akin to Google's C++ style)
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#adding-additional-style-options
+---
+Language: Cpp
+BasedOnStyle: LLVM
+UseTab: ForContinuationAndIndentation
+IndentWidth: 4
+TabWidth: 4
+AccessModifierOffset: -4
+ColumnLimit: 0
+NamespaceIndentation: Inner
+FixNamespaceComments: true
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Empty
+IndentCaseLabels: false
+SortIncludes: Never
+AlignConsecutiveMacros: AcrossEmptyLines
+AlignConsecutiveAssignments: Consecutive
+BreakStringLiterals: true
+LineEnding: LF
+MaxEmptyLinesToKeep: 2
+BreakBeforeBraces: Attach
+
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping
+# BreakBeforeBraces: Custom
+# BraceWrapping:
+#   # After
+#   AfterClass: false
+#   AfterEnum: false
+#   AfterFunction: false
+#   AfterNamespace: false
+#   AfterStruct: false
+#   AfterUnion: false
+#   AfterExternBlock: false
+#   # AfterControlStatement: MultiLine
+#   AfterControlStatement: Never
+#   # Before
+#   BeforeElse: false
+#   BeforeCatch: false
+#   BeforeLambdaBody: false
+#   BeforeWhile: false
+#   # Split
+#   SplitEmptyFunction: false
+#   SplitEmptyRecord: false
+#   SplitEmptyNamespace: false
+
+# Setting this option to true could lead to incorrect code formatting due to clang-format’s lack of complete semantic information.
+# One should only enable it for new code or when refactoring existing code,
+# and then carefully review the changes to ensure that the code is still correct.
+InsertBraces: false
