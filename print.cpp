@@ -18,15 +18,15 @@ int main() {
 	std::println("FPS={}", 1.0 / bvh.GetInterval());
 	std::println("NumFrame={}", bvh.GetNumFrame());
 	std::println("AnimationTime={}s", bvh.GetNumFrame() * bvh.GetInterval());
-
 	assert(bvh.GetNumChannel() == bvh.GetStride());
 	std::println("NumFrame={} NumChannel={} Stride={}", bvh.GetNumFrame(), bvh.GetNumChannel(), bvh.GetStride());
 
+	constexpr auto sel_frame = 120;
+	std::println("Info at Frame {}", sel_frame);
 	std::println("Joints:");
 	constexpr auto handle_joint = [](const BVH::Joint &joint) {
 		const auto name                 = joint.name;
 		const auto offset               = joint.GetOffset();
-		const auto e_site               = joint.GetSite();
 		const auto idx                  = joint.index;
 		const auto &channels            = joint.GetChannels();
 		const auto channel_short_string = [channels] {
@@ -37,13 +37,29 @@ int main() {
 			}
 			return ss.str();
 		};
-		const auto channel_string = channel_short_string();
-		if (e_site) {
-			const auto site = *e_site;
-			std::println("{}\t{}\toffset({},{},{})\tsite({},{},{})\t{}", idx, name, offset[0], offset[1], offset[2], site[0], site[1], site[2], channel_string);
-		} else {
-			std::println("{}\t{}\toffset({},{},{})\t\t{}", idx, name, offset[0], offset[1], offset[2], channel_string);
+		std::print("{}\t{}", idx, name);
+		if (const auto e_parent = joint.GetParent()) {
+			const auto &parent = *e_parent;
+			std::print("\tP({})", parent.name);
 		}
+		std::print("\toffset({:.4},{:.4},{:.4})", offset[0], offset[1], offset[2]);
+		if (const auto e_site = joint.GetEndSite()) {
+			const auto site = *e_site;
+			std::print("\tend({:.4},{:.4},{:.4})", site[0], site[1], site[2]);
+		} else {
+			std::print("\t");
+		}
+		const auto channel_string = channel_short_string();
+		std::print("\t{}", channel_string);
+		if (const auto e_rotation = joint.GetRotation(sel_frame)) {
+			const auto rotation = *e_rotation;
+			std::print("\trot({:.4},{:.4},{:.4})", rotation[0], rotation[1], rotation[2]);
+		}
+		if (const auto e_position = joint.GetPosition(sel_frame)) {
+			const auto position = *e_position;
+			std::print("\tpos({:.4},{:.4},{:.4})", position[0], position[1], position[2]);
+		}
+		std::print("\n");
 	};
 	for (int i = 0; i < bvh.GetNumJoint(); i++) {
 		const auto &joint = *bvh.GetJoint(i);

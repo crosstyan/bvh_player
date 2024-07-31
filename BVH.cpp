@@ -14,16 +14,9 @@
 
 using namespace std;
 // コントラクタ
-BVH::BVH() {
-	motion = nullptr;
-	Clear();
-}
-
-// コントラクタ
 BVH::BVH(const char *bvh_file_name) {
 	motion = nullptr;
 	Clear();
-
 	Load(bvh_file_name);
 }
 
@@ -42,9 +35,7 @@ void BVH::Clear() {
 	for (i = 0; i < joints.size(); i++) {
 		delete joints[i];
 	}
-	if (motion != nullptr) {
-		delete motion;
-	}
+	delete motion;
 
 	is_load_success = false;
 
@@ -96,7 +87,8 @@ void BVH::SetSkeleton(const char *name,
 	}
 	joints.resize(n_joi);
 	for (i = 0; i < n_joi; i++) {
-		joints[i] = new Joint();
+		joints[i]            = new Joint();
+		joints[i]->hierarchy = this;
 	}
 
 	// チャンネル・関節情報をコピー
@@ -142,7 +134,7 @@ void BVH::SetMotion(int n_frame, double inter, const double *mo) {
 //  BVHファイルのロード
 //
 void BVH::Load(const char *bvh_file_name) {
-	constexpr auto  BUFFER_LENGTH = 1024 * 4;
+	constexpr auto BUFFER_LENGTH = 1024 * 4;
 	ifstream file;
 	char line[BUFFER_LENGTH];
 	char *token;
@@ -217,15 +209,16 @@ void BVH::Load(const char *bvh_file_name) {
 			(strcmp(token, "JOINT") == 0)) {
 			// 関節データの作成
 			new_joint            = new Joint();
+			new_joint->hierarchy = this;
 			new_joint->index     = joints.size();
 			new_joint->parent    = joint;
-			new_joint->has_site  = false;
+			new_joint->has_end_site  = false;
 			new_joint->offset[0] = 0.0;
 			new_joint->offset[1] = 0.0;
 			new_joint->offset[2] = 0.0;
-			new_joint->site[0]   = 0.0;
-			new_joint->site[1]   = 0.0;
-			new_joint->site[2]   = 0.0;
+			new_joint->end_site[0]   = 0.0;
+			new_joint->end_site[1]   = 0.0;
+			new_joint->end_site[2]   = 0.0;
 			joints.push_back(new_joint);
 			if (joint) {
 				joint->children.push_back(new_joint);
@@ -262,10 +255,10 @@ void BVH::Load(const char *bvh_file_name) {
 
 			// 関節のオフセットに座標値を設定
 			if (is_site) {
-				joint->has_site = true;
-				joint->site[0]  = x;
-				joint->site[1]  = y;
-				joint->site[2]  = z;
+				joint->has_end_site = true;
+				joint->end_site[0]  = x;
+				joint->end_site[1]  = y;
+				joint->end_site[2]  = z;
 			} else {
 				// 末端位置に座標値を設定
 				joint->offset[0] = x;
@@ -502,7 +495,7 @@ void BVH::OutputHierarchy(
 	}
 
 	// 末端位置の情報を出力
-	if (joint->has_site) {
+	if (joint->has_end_site) {
 		file << indent << "End Site" << endl;
 		file << indent << "{" << endl;
 
@@ -511,9 +504,9 @@ void BVH::OutputHierarchy(
 
 		// オフセット位置の出力
 		file << indent << "OFFSET" << space;
-		file << joint->site[0] << space;
-		file << joint->site[1] << space;
-		file << joint->site[2] << endl;
+		file << joint->end_site[0] << space;
+		file << joint->end_site[1] << space;
+		file << joint->end_site[2] << endl;
 
 		indent_level--;
 		indent.assign(indent_level * 4, ' ');
@@ -573,7 +566,7 @@ void BVH::RenderFigure(const Joint *joint, const double *data, float scale) {
 	// リンクを描画
 	// 関節座標系の原点から末端点へのリンクを描画
 	if (joint->children.size() == 0) {
-		RenderBone(0.0f, 0.0f, 0.0f, joint->site[0] * scale, joint->site[1] * scale, joint->site[2] * scale);
+		RenderBone(0.0f, 0.0f, 0.0f, joint->end_site[0] * scale, joint->end_site[1] * scale, joint->end_site[2] * scale);
 	}
 	// 関節座標系の原点から次の関節への接続位置へのリンクを描画
 	if (joint->children.size() == 1) {
