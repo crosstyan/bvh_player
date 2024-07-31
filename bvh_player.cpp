@@ -10,6 +10,8 @@
 	#include <windows.h>
 #endif
 
+#include <memory>
+
 #include <glut.h>
 
 #include <stdio.h>
@@ -50,8 +52,9 @@ float  animation_time = 0.0f;
 int    frame_no = 0;
 
 // BVH動作データ
-BVH *   bvh = NULL;
+std::unique_ptr<BVH> bvh = nullptr;
 
+bool is_draw_ground = false;
 
 
 //
@@ -115,33 +118,36 @@ void  display( void )
 	glLightfv( GL_LIGHT0, GL_POSITION, light0_position );
 
 	// 地面を描画
-	float  size = 1.5f;
-	int  num_x = 10, num_z = 10;
-	double  ox, oz;
-	glBegin( GL_QUADS );
-		glNormal3d( 0.0, 1.0, 0.0 );
-		ox = -(num_x * size) / 2;
-		for ( int x=0; x<num_x; x++, ox+=size )
-		{
-			oz = -(num_z * size) / 2;
-			for ( int z=0; z<num_z; z++, oz+=size )
+	if (is_draw_ground){
+		float  size = 1.5f;
+		int  num_x = 10, num_z = 10;
+		double  ox, oz;
+		glBegin( GL_QUADS );
+			glNormal3d( 0.0, 1.0, 0.0 );
+			ox = -(num_x * size) / 2;
+			for ( int x=0; x<num_x; x++, ox+=size )
 			{
-				if ( ((x + z) % 2) == 0 )
-					glColor3f( 1.0, 1.0, 1.0 );
-				else
-					glColor3f( 0.8, 0.8, 0.8 );
-				glVertex3d( ox, 0.0, oz );
-				glVertex3d( ox, 0.0, oz+size );
-				glVertex3d( ox+size, 0.0, oz+size );
-				glVertex3d( ox+size, 0.0, oz );
+				oz = -(num_z * size) / 2;
+				for ( int z=0; z<num_z; z++, oz+=size )
+				{
+					if ( ((x + z) % 2) == 0 )
+						glColor3f( 1.0, 1.0, 1.0 );
+					else
+						glColor3f( 0.8, 0.8, 0.8 );
+					glVertex3d( ox, 0.0, oz );
+					glVertex3d( ox, 0.0, oz+size );
+					glVertex3d( ox+size, 0.0, oz+size );
+					glVertex3d( ox+size, 0.0, oz );
+				}
 			}
-		}
-	glEnd();
+		glEnd();
+	}
 
 	// キャラクタを描画
 	glColor3f( 1.0f, 0.0f, 0.0f );
-	if ( bvh )
+	if ( bvh ){
 		bvh->RenderFigure( frame_no, 0.02f );
+	}
 
 	// 時間とフレーム番号を表示
 	char  message[ 64 ];
@@ -286,6 +292,11 @@ void  keyboard( unsigned char key, int mx, int my )
 		frame_no = 0;
 	}
 
+	// toggle ground
+	if ( key == 'g' ) {
+		is_draw_ground = !is_draw_ground;
+	}
+
 	// l キーで再生動作の変更
 	if ( key == 'l' )
 	{
@@ -328,6 +339,17 @@ void  keyboard( unsigned char key, int mx, int my )
 			animation_time = 0.0f;
 			frame_no = 0;
 		}
+#else
+		// I'm too lazy to implement file dialog
+		// just hard code the file path
+		constexpr auto file_name = "/Users/crosstyan/Code/bvh_player/data/172_jump_4.bvh";
+		bvh = std::make_unique<BVH>(file_name);
+		if (not bvh->IsLoadSuccess()) {
+			printf("Failed to load BVH file\n");
+			bvh = nullptr;
+		}
+		animation_time = 0.0f;
+		frame_no = 0;
 #endif
 	}
 
