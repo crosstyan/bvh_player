@@ -13,6 +13,8 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <optional>
+#include <algorithm>
 
 //
 //  BVH形式のモーションデータ
