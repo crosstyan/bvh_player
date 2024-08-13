@@ -6,10 +6,14 @@
 
 
 #include <fstream>
-#include <string.h>
+#include <cstring>
 #include "bvh.h"
-#include <math.h>
+#include <cmath>
+#ifdef __APPLE__
 #include <glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #define FREEGLUT_STATIC
 
 using namespace std;

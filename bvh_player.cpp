@@ -11,12 +11,13 @@
 #endif
 
 #include <memory>
-
-#include <glut.h>
-
-#include <stdio.h>
-
+#include <cstdio>
 #include "bvh.h"
+#ifdef __APPLE__
+#include <glut.h>
+#else
+#include <GL/glut.h>
+#endif
 
 
 //
