@@ -1,6 +1,6 @@
 #include "BVH.h"
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <format>
 #include <print>
@@ -61,8 +61,7 @@ int main() {
 		}
 		std::print("\n");
 	};
-	for (int i = 0; i < bvh.GetNumJoint(); i++) {
-		const auto &joint = *bvh.GetJoint(i);
-		handle_joint(joint);
+	for (const auto *j : bvh.GetJoints()) {
+		handle_joint(*j);
 	}
 }

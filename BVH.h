@@ -242,9 +242,11 @@ public:
 
 	// 階層構造の情報の取得
 	[[nodiscard]] int GetNumJoint() const { return joints.size(); }
-	[[nodiscard]] const Joint *GetJoint(int no) const { return joints[no]; }
+	[[nodiscard]] const Joint *GetJoint(const int no) const { return joints[no]; }
+	[[nodiscard]] std::span<Joint *const> GetJoints() const noexcept { return {joints.cbegin(), joints.cend()}; }
 	[[nodiscard]] int GetNumChannel() const { return channels.size(); }
-	[[nodiscard]] const Channel *GetChannel(int no) const { return channels[no]; }
+	[[nodiscard]] const Channel *GetChannel(const int no) const { return channels[no]; }
+	[[nodiscard]] std::span<Channel *const> GetChannels() const noexcept { return {channels.cbegin(), channels.cend()}; }
 
 	[[nodiscard]] const Joint *GetJoint(const std::string &j) const {
 		auto i = joint_index.find(j);
