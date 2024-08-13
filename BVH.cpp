@@ -7,7 +7,7 @@
 
 #include <fstream>
 #include <string.h>
-#include "BVH.h"
+#include "bvh.h"
 #include <math.h>
 #include <glut.h>
 #define FREEGLUT_STATIC

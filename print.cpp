@@ -1,4 +1,4 @@
-#include "BVH.h"
+#include "bvh.h"
 
 #include <cassert>
 #include <iostream>

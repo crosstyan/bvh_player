@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 
-#include "BVH.h"
+#include "bvh.h"
 
 
 //
